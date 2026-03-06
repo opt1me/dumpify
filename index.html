@@ -2,8 +2,14 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Capture — Brain Dump Tool</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0e0e0e">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Capture">
+<title>Capture</title>
+<link rel="manifest" href="manifest.json">
 <link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;1,9..144,300&display=swap" rel="stylesheet">
 <style>
   :root {
@@ -19,15 +25,6 @@
     --accent-dim: #8a7a68;
     --red: #e05555;
     --green: #5db87a;
-    --blue: #6aabcd;
-    --tag-work: #c8b89a22;
-    --tag-work-border: #c8b89a55;
-    --tag-personal: #5db87a22;
-    --tag-personal-border: #5db87a55;
-    --tag-health: #e0855522;
-    --tag-health-border: #e0855555;
-    --tag-relationship: #cd6aab22;
-    --tag-relationship-border: #cd6aab55;
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -39,10 +36,11 @@
     font-size: 13px;
     line-height: 1.6;
     min-height: 100vh;
+    min-height: 100dvh;
     overflow-x: hidden;
+    padding-bottom: env(safe-area-inset-bottom);
   }
 
-  /* Subtle grain overlay */
   body::before {
     content: '';
     position: fixed;
@@ -56,7 +54,7 @@
   .app {
     max-width: 820px;
     margin: 0 auto;
-    padding: 48px 24px 80px;
+    padding: 44px 20px 80px;
   }
 
   /* Header */
@@ -64,8 +62,8 @@
     display: flex;
     align-items: baseline;
     justify-content: space-between;
-    margin-bottom: 48px;
-    padding-bottom: 20px;
+    margin-bottom: 36px;
+    padding-bottom: 18px;
     border-bottom: 1px solid var(--border);
   }
 
@@ -80,84 +78,77 @@
 
   .logo span {
     font-style: normal;
-    color: var(--text-dim);
-    font-size: 11px;
+    color: var(--text-dimmer);
+    font-size: 10px;
     font-family: 'DM Mono', monospace;
-    margin-left: 12px;
+    margin-left: 10px;
     letter-spacing: 0.08em;
     text-transform: uppercase;
   }
 
-  .header-actions {
-    display: flex;
-    gap: 8px;
-    align-items: center;
-  }
+  .header-actions { display: flex; gap: 8px; align-items: center; }
 
   .btn-ghost {
     background: none;
     border: 1px solid var(--border);
     color: var(--text-dim);
-    padding: 6px 14px;
+    padding: 5px 12px;
     border-radius: 4px;
     cursor: pointer;
     font-family: 'DM Mono', monospace;
-    font-size: 11px;
+    font-size: 10px;
     letter-spacing: 0.06em;
     text-transform: uppercase;
     transition: all 0.15s;
   }
-
-  .btn-ghost:hover {
-    border-color: var(--border-bright);
-    color: var(--text);
-  }
+  .btn-ghost:hover { border-color: var(--border-bright); color: var(--text); }
 
   /* Tabs */
   .tabs {
     display: flex;
-    gap: 0;
-    margin-bottom: 32px;
+    margin-bottom: 28px;
     border-bottom: 1px solid var(--border);
+    overflow-x: auto;
+    scrollbar-width: none;
   }
+  .tabs::-webkit-scrollbar { display: none; }
 
   .tab {
-    padding: 10px 20px;
+    padding: 9px 18px;
     background: none;
     border: none;
     color: var(--text-dimmer);
     cursor: pointer;
     font-family: 'DM Mono', monospace;
-    font-size: 11px;
+    font-size: 10px;
     letter-spacing: 0.08em;
     text-transform: uppercase;
     border-bottom: 2px solid transparent;
     margin-bottom: -1px;
     transition: all 0.15s;
+    white-space: nowrap;
   }
-
   .tab:hover { color: var(--text-dim); }
-  .tab.active {
-    color: var(--accent);
-    border-bottom-color: var(--accent);
-  }
+  .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
 
-  /* Capture panel */
+  /* Capture area */
   .capture-area {
     background: var(--surface);
     border: 1px solid var(--border);
     border-radius: 8px;
     overflow: hidden;
-    margin-bottom: 20px;
+    margin-bottom: 16px;
   }
 
   .capture-toolbar {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 12px 16px;
+    padding: 10px 14px;
     border-bottom: 1px solid var(--border);
     background: var(--surface2);
+    gap: 8px;
+    flex-wrap: wrap;
   }
 
   .capture-label {
@@ -167,10 +158,12 @@
     text-transform: uppercase;
   }
 
+  .toolbar-right { display: flex; gap: 8px; align-items: center; }
+
   .record-btn {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 7px;
     background: none;
     border: 1px solid var(--border);
     color: var(--text-dim);
@@ -178,23 +171,19 @@
     border-radius: 4px;
     cursor: pointer;
     font-family: 'DM Mono', monospace;
-    font-size: 11px;
+    font-size: 10px;
     letter-spacing: 0.06em;
     text-transform: uppercase;
     transition: all 0.2s;
   }
-
-  .record-btn:hover {
-    border-color: var(--red);
-    color: var(--red);
-  }
-
+  .record-btn:hover { border-color: var(--red); color: var(--red); }
   .record-btn.recording {
     border-color: var(--red);
     color: var(--red);
     background: #e0555511;
     animation: pulse-border 1.5s ease-in-out infinite;
   }
+  .record-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
   @keyframes pulse-border {
     0%, 100% { box-shadow: 0 0 0 0 #e0555533; }
@@ -202,15 +191,12 @@
   }
 
   .record-dot {
-    width: 7px;
-    height: 7px;
+    width: 7px; height: 7px;
     border-radius: 50%;
     background: currentColor;
+    flex-shrink: 0;
   }
-
-  .record-btn.recording .record-dot {
-    animation: blink 1s ease-in-out infinite;
-  }
+  .record-btn.recording .record-dot { animation: blink 1s ease-in-out infinite; }
 
   @keyframes blink {
     0%, 100% { opacity: 1; }
@@ -219,7 +205,7 @@
 
   textarea {
     width: 100%;
-    min-height: 180px;
+    min-height: 160px;
     background: transparent;
     border: none;
     outline: none;
@@ -227,11 +213,10 @@
     font-family: 'DM Mono', monospace;
     font-size: 13px;
     line-height: 1.8;
-    padding: 20px;
+    padding: 18px;
     resize: vertical;
     font-weight: 300;
   }
-
   textarea::placeholder {
     color: var(--text-dimmer);
     font-style: italic;
@@ -241,36 +226,36 @@
   }
 
   .char-count {
-    padding: 8px 16px;
+    padding: 7px 14px;
     border-top: 1px solid var(--border);
     color: var(--text-dimmer);
     font-size: 10px;
     text-align: right;
   }
 
-  /* Actions row */
+  /* Actions */
   .actions-row {
     display: flex;
-    gap: 10px;
-    margin-bottom: 32px;
+    gap: 8px;
+    margin-bottom: 28px;
     flex-wrap: wrap;
+    align-items: center;
   }
 
   .btn-primary {
     background: var(--accent);
     color: var(--bg);
     border: none;
-    padding: 10px 20px;
+    padding: 10px 18px;
     border-radius: 4px;
     cursor: pointer;
     font-family: 'DM Mono', monospace;
-    font-size: 11px;
+    font-size: 10px;
     font-weight: 500;
     letter-spacing: 0.06em;
     text-transform: uppercase;
     transition: all 0.15s;
   }
-
   .btn-primary:hover { background: #d4c4a8; }
   .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
 
@@ -278,50 +263,38 @@
     background: none;
     border: 1px solid var(--border);
     color: var(--text-dim);
-    padding: 10px 20px;
+    padding: 10px 18px;
     border-radius: 4px;
     cursor: pointer;
     font-family: 'DM Mono', monospace;
-    font-size: 11px;
+    font-size: 10px;
     letter-spacing: 0.06em;
     text-transform: uppercase;
     transition: all 0.15s;
   }
+  .btn-secondary:hover { border-color: var(--border-bright); color: var(--text); }
 
-  .btn-secondary:hover {
-    border-color: var(--border-bright);
-    color: var(--text);
-  }
-
-  /* Status message */
   .status {
     font-size: 11px;
     color: var(--text-dim);
-    padding: 10px 0;
     display: flex;
     align-items: center;
     gap: 8px;
     margin-left: auto;
   }
-
   .status.loading::before {
     content: '';
-    width: 10px;
-    height: 10px;
+    width: 10px; height: 10px;
     border: 1px solid var(--accent-dim);
     border-top-color: var(--accent);
     border-radius: 50%;
     animation: spin 0.8s linear infinite;
     display: inline-block;
   }
-
   @keyframes spin { to { transform: rotate(360deg); } }
 
   /* Results */
-  .results {
-    animation: fadeUp 0.3s ease;
-  }
-
+  .results { animation: fadeUp 0.3s ease; }
   @keyframes fadeUp {
     from { opacity: 0; transform: translateY(8px); }
     to { opacity: 1; transform: translateY(0); }
@@ -331,26 +304,24 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: 16px;
+    margin-bottom: 14px;
+    gap: 12px;
+    flex-wrap: wrap;
   }
 
   .results-title {
     font-family: 'Fraunces', serif;
     font-style: italic;
-    font-size: 16px;
+    font-size: 15px;
     font-weight: 300;
     color: var(--text-dim);
   }
 
-  .timestamp {
-    font-size: 10px;
-    color: var(--text-dimmer);
-    letter-spacing: 0.06em;
-  }
+  .timestamp { font-size: 10px; color: var(--text-dimmer); letter-spacing: 0.06em; }
 
   /* Category blocks */
   .category-block {
-    margin-bottom: 16px;
+    margin-bottom: 12px;
     border: 1px solid var(--border);
     border-radius: 6px;
     overflow: hidden;
@@ -360,13 +331,12 @@
     display: flex;
     align-items: center;
     gap: 10px;
-    padding: 10px 16px;
+    padding: 10px 14px;
     background: var(--surface2);
     border-bottom: 1px solid var(--border);
     cursor: pointer;
     user-select: none;
   }
-
   .category-header:hover { background: #222; }
 
   .cat-tag {
@@ -378,46 +348,24 @@
     font-weight: 500;
   }
 
-  .cat-work .cat-tag { background: var(--tag-work); border: 1px solid var(--tag-work-border); color: var(--accent); }
-  .cat-personal .cat-tag { background: var(--tag-personal); border: 1px solid var(--tag-personal-border); color: var(--green); }
-  .cat-health .cat-tag { background: var(--tag-health); border: 1px solid var(--tag-health-border); color: #e08555; }
-  .cat-relationship .cat-tag { background: var(--tag-relationship); border: 1px solid var(--tag-relationship-border); color: #cd6aab; }
-  .cat-admin .cat-tag { background: #6aabcd22; border: 1px solid #6aabcd55; color: var(--blue); }
-
-  .cat-count {
-    font-size: 10px;
-    color: var(--text-dimmer);
-    margin-left: auto;
-  }
-
-  .cat-chevron {
-    color: var(--text-dimmer);
-    font-size: 10px;
-    transition: transform 0.2s;
-  }
-
+  .cat-count { font-size: 10px; color: var(--text-dimmer); margin-left: auto; }
+  .cat-chevron { color: var(--text-dimmer); font-size: 10px; transition: transform 0.2s; }
   .category-block.collapsed .cat-chevron { transform: rotate(-90deg); }
   .category-block.collapsed .category-items { display: none; }
-
-  .category-items {
-    padding: 8px 0;
-  }
 
   .task-item {
     display: flex;
     align-items: flex-start;
     gap: 12px;
-    padding: 8px 16px;
+    padding: 9px 14px;
     border-bottom: 1px solid var(--border);
     transition: background 0.1s;
   }
-
   .task-item:last-child { border-bottom: none; }
   .task-item:hover { background: #ffffff05; }
 
   .task-check {
-    width: 14px;
-    height: 14px;
+    width: 14px; height: 14px;
     border: 1px solid var(--border-bright);
     border-radius: 3px;
     cursor: pointer;
@@ -428,18 +376,9 @@
     justify-content: center;
     transition: all 0.15s;
   }
-
   .task-check:hover { border-color: var(--accent-dim); }
-  .task-check.done {
-    background: var(--accent-dim);
-    border-color: var(--accent-dim);
-  }
-
-  .task-check.done::after {
-    content: '✓';
-    color: var(--bg);
-    font-size: 9px;
-  }
+  .task-check.done { background: var(--accent-dim); border-color: var(--accent-dim); }
+  .task-check.done::after { content: '✓'; color: var(--bg); font-size: 9px; }
 
   .task-text {
     flex: 1;
@@ -448,11 +387,7 @@
     line-height: 1.6;
     transition: all 0.15s;
   }
-
-  .task-item.done-item .task-text {
-    color: var(--text-dimmer);
-    text-decoration: line-through;
-  }
+  .task-item.done-item .task-text { color: var(--text-dimmer); text-decoration: line-through; }
 
   .task-priority {
     font-size: 9px;
@@ -465,147 +400,75 @@
     flex-shrink: 0;
     margin-top: 2px;
   }
-
   .task-priority.high { color: var(--red); border-color: #e0555544; }
   .task-priority.medium { color: var(--accent); border-color: #c8b89a44; }
 
-  /* Raw dump section */
   .raw-dump {
-    margin-top: 24px;
-    padding: 16px;
+    margin-top: 20px;
+    padding: 14px;
     background: var(--surface);
     border: 1px solid var(--border);
     border-radius: 6px;
   }
+  .raw-label { font-size: 9px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-dimmer); margin-bottom: 8px; }
+  .raw-text { color: var(--text-dim); font-style: italic; font-family: 'Fraunces', serif; font-size: 13px; font-weight: 300; line-height: 1.7; }
 
-  .raw-label {
-    font-size: 9px;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--text-dimmer);
-    margin-bottom: 10px;
-  }
-
-  .raw-text {
-    color: var(--text-dim);
-    font-style: italic;
-    font-family: 'Fraunces', serif;
-    font-size: 13px;
-    font-weight: 300;
-    line-height: 1.7;
-  }
-
-  /* History tab */
-  .history-list {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-  }
+  /* History */
+  .history-list { display: flex; flex-direction: column; gap: 10px; }
 
   .history-item {
     background: var(--surface);
     border: 1px solid var(--border);
     border-radius: 6px;
-    padding: 14px 16px;
+    padding: 12px 14px;
     cursor: pointer;
     transition: all 0.15s;
   }
-
   .history-item:hover { border-color: var(--border-bright); }
 
-  .history-meta {
-    display: flex;
-    justify-content: space-between;
-    align-items: baseline;
-    margin-bottom: 6px;
-  }
+  .history-meta { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 5px; }
+  .history-date { font-size: 10px; color: var(--text-dimmer); letter-spacing: 0.06em; }
+  .history-tags { display: flex; gap: 4px; }
+  .history-tag-dot { width: 6px; height: 6px; border-radius: 50%; }
+  .history-preview { color: var(--text-dim); font-size: 12px; line-height: 1.5; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .history-task-count { font-size: 10px; color: var(--text-dimmer); margin-top: 5px; }
 
-  .history-date {
-    font-size: 10px;
-    color: var(--text-dimmer);
-    letter-spacing: 0.06em;
-  }
+  .empty-state { text-align: center; padding: 60px 20px; color: var(--text-dimmer); }
+  .empty-state .empty-icon { font-size: 28px; margin-bottom: 10px; opacity: 0.3; }
+  .empty-state p { font-size: 12px; line-height: 1.6; }
 
-  .history-tags {
-    display: flex;
-    gap: 4px;
-  }
-
-  .history-tag-dot {
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-  }
-
-  .history-preview {
-    color: var(--text-dim);
-    font-size: 12px;
-    line-height: 1.5;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-
-  .history-task-count {
-    font-size: 10px;
-    color: var(--text-dimmer);
-    margin-top: 6px;
-  }
-
-  .empty-state {
-    text-align: center;
-    padding: 60px 20px;
-    color: var(--text-dimmer);
-  }
-
-  .empty-state .empty-icon {
-    font-size: 32px;
-    margin-bottom: 12px;
-    opacity: 0.3;
-  }
-
-  .empty-state p {
-    font-size: 12px;
-    line-height: 1.6;
-  }
-
-  /* Settings panel */
-  .settings-panel {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 24px;
-  }
+  /* Settings */
+  .settings-panel { display: flex; flex-direction: column; gap: 2px; }
 
   .settings-section {
-    margin-bottom: 28px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    overflow: hidden;
+    margin-bottom: 10px;
   }
-
-  .settings-section:last-child { margin-bottom: 0; }
 
   .settings-section-title {
     font-size: 10px;
     letter-spacing: 0.1em;
     text-transform: uppercase;
     color: var(--text-dimmer);
-    margin-bottom: 14px;
-    padding-bottom: 8px;
+    padding: 10px 14px;
+    background: var(--surface2);
     border-bottom: 1px solid var(--border);
   }
+
+  .settings-body { padding: 16px 14px; }
 
   .setting-row {
     display: flex;
     align-items: center;
-    gap: 12px;
-    margin-bottom: 12px;
+    gap: 10px;
+    margin-bottom: 10px;
   }
+  .setting-row:last-child { margin-bottom: 0; }
 
-  .setting-row label {
-    width: 120px;
-    font-size: 11px;
-    color: var(--text-dim);
-    flex-shrink: 0;
-  }
+  .setting-row label { width: 110px; font-size: 11px; color: var(--text-dim); flex-shrink: 0; }
 
   .setting-row input,
   .setting-row select {
@@ -613,28 +476,25 @@
     background: var(--surface2);
     border: 1px solid var(--border);
     color: var(--text);
-    padding: 8px 12px;
+    padding: 7px 10px;
     border-radius: 4px;
     font-family: 'DM Mono', monospace;
     font-size: 12px;
     outline: none;
     transition: border-color 0.15s;
+    min-width: 0;
   }
-
   .setting-row input:focus,
-  .setting-row select:focus {
-    border-color: var(--accent-dim);
-  }
-
+  .setting-row select:focus { border-color: var(--accent-dim); }
   .setting-row select option { background: #1e1e1e; }
 
   .setting-hint {
     font-size: 10px;
     color: var(--text-dimmer);
-    margin-top: -6px;
-    margin-bottom: 10px;
-    padding-left: 132px;
     line-height: 1.5;
+    margin-top: -4px;
+    margin-bottom: 8px;
+    padding-left: 120px;
   }
 
   .api-status {
@@ -642,51 +502,155 @@
     align-items: center;
     gap: 8px;
     font-size: 11px;
-    margin-top: 12px;
-    padding: 10px 12px;
+    margin-top: 10px;
+    padding: 9px 10px;
     background: var(--surface2);
     border-radius: 4px;
   }
+  .status-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--text-dimmer); }
+  .status-dot.configured { background: var(--green); }
 
-  .status-dot {
-    width: 7px;
-    height: 7px;
-    border-radius: 50%;
-    background: var(--text-dimmer);
+  /* Category manager */
+  .cat-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px; }
+
+  .cat-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 10px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 5px;
   }
 
-  .status-dot.configured { background: var(--green); }
-  .status-dot.unconfigured { background: var(--text-dimmer); }
+  .cat-color-swatch {
+    width: 14px; height: 14px;
+    border-radius: 3px;
+    flex-shrink: 0;
+    cursor: pointer;
+    border: 1px solid #ffffff22;
+  }
+
+  .cat-name-input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    outline: none;
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    min-width: 0;
+  }
+
+  .cat-keywords-input {
+    flex: 2;
+    background: transparent;
+    border: none;
+    border-left: 1px solid var(--border);
+    outline: none;
+    color: var(--text-dim);
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    padding-left: 8px;
+    min-width: 0;
+  }
+  .cat-keywords-input::placeholder { color: var(--text-dimmer); font-size: 10px; }
+
+  .cat-delete {
+    background: none;
+    border: none;
+    color: var(--text-dimmer);
+    cursor: pointer;
+    font-size: 14px;
+    padding: 0 2px;
+    line-height: 1;
+    flex-shrink: 0;
+    transition: color 0.15s;
+  }
+  .cat-delete:hover { color: var(--red); }
+
+  .cat-add-btn {
+    background: none;
+    border: 1px dashed var(--border);
+    color: var(--text-dimmer);
+    padding: 8px 14px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    width: 100%;
+    transition: all 0.15s;
+  }
+  .cat-add-btn:hover { border-color: var(--border-bright); color: var(--text-dim); }
+
+  .color-picker-row {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    padding: 8px 10px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    margin-top: -4px;
+    margin-bottom: 8px;
+  }
+  .color-dot {
+    width: 20px; height: 20px;
+    border-radius: 4px;
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: border-color 0.1s;
+  }
+  .color-dot:hover, .color-dot.selected { border-color: #ffffff55; }
 
   /* Notification */
   .notif {
     position: fixed;
     bottom: 24px;
-    right: 24px;
+    right: 20px;
     background: var(--surface2);
     border: 1px solid var(--border-bright);
     color: var(--text);
-    padding: 10px 16px;
+    padding: 10px 14px;
     border-radius: 6px;
     font-size: 12px;
     z-index: 100;
     animation: slideIn 0.2s ease;
-    max-width: 300px;
+    max-width: 280px;
+    line-height: 1.5;
   }
-
   @keyframes slideIn {
     from { opacity: 0; transform: translateY(10px); }
     to { opacity: 1; transform: translateY(0); }
   }
 
-  /* Mobile tweaks */
+  /* Install banner */
+  .install-banner {
+    display: none;
+    background: var(--surface2);
+    border: 1px solid var(--accent-dim);
+    border-radius: 6px;
+    padding: 12px 14px;
+    margin-bottom: 20px;
+    align-items: center;
+    gap: 12px;
+    font-size: 12px;
+    color: var(--text-dim);
+  }
+  .install-banner.visible { display: flex; }
+  .install-banner strong { color: var(--accent); }
+
   @media (max-width: 600px) {
-    .app { padding: 24px 16px 60px; }
-    .header { flex-direction: column; gap: 12px; }
+    .app { padding: 20px 14px 80px; }
+    .header { flex-direction: column; gap: 10px; align-items: flex-start; }
     .setting-row { flex-direction: column; align-items: flex-start; }
     .setting-row label { width: auto; }
     .setting-hint { padding-left: 0; }
     .actions-row { flex-direction: column; }
+    .btn-primary, .btn-secondary { width: 100%; text-align: center; }
+    .status { margin-left: 0; }
   }
 </style>
 </head>
@@ -694,11 +658,18 @@
 <div class="app">
 
   <div class="header">
-    <div class="logo">Capture <span>Brain dump tool</span></div>
+    <div class="logo">Capture <span>Brain dump</span></div>
     <div class="header-actions">
       <button class="btn-ghost" onclick="exportAll()">Export</button>
-      <button class="btn-ghost" onclick="clearAll()">Clear all</button>
+      <button class="btn-ghost" onclick="clearAllHistory()">Clear history</button>
     </div>
+  </div>
+
+  <!-- Install banner (shown when PWA installable) -->
+  <div class="install-banner" id="installBanner">
+    <span>📲 <strong>Add to home screen</strong> for the best experience</span>
+    <button class="btn-primary" onclick="installPWA()" style="margin-left:auto;white-space:nowrap">Install</button>
+    <button class="btn-ghost" onclick="document.getElementById('installBanner').classList.remove('visible')">✕</button>
   </div>
 
   <!-- Tabs -->
@@ -708,17 +679,19 @@
     <button class="tab" onclick="showTab('settings', this)">Settings</button>
   </div>
 
-  <!-- DUMP TAB -->
+  <!-- ── DUMP TAB ── -->
   <div id="tab-dump">
     <div class="capture-area">
       <div class="capture-toolbar">
         <span class="capture-label">What's on your mind?</span>
-        <button class="record-btn" id="recordBtn" onclick="toggleRecording()">
-          <span class="record-dot"></span>
-          <span id="recordLabel">Speak</span>
-        </button>
+        <div class="toolbar-right">
+          <button class="record-btn" id="recordBtn" onclick="toggleRecording()">
+            <span class="record-dot"></span>
+            <span id="recordLabel">Speak</span>
+          </button>
+        </div>
       </div>
-      <textarea id="dumpText" placeholder="Just talk — tasks, worries, things to do, things you're thinking about. Don't organise it, just get it out..." oninput="updateCharCount()"></textarea>
+      <textarea id="dumpText" placeholder="Just talk — tasks, worries, things to do, things on your mind. Don't organise it, just get it out…" oninput="updateCharCount()"></textarea>
       <div class="char-count"><span id="charCount">0</span> chars</div>
     </div>
 
@@ -732,109 +705,114 @@
     <div id="resultsArea"></div>
   </div>
 
-  <!-- HISTORY TAB -->
+  <!-- ── HISTORY TAB ── -->
   <div id="tab-history" style="display:none">
     <div class="history-list" id="historyList">
       <div class="empty-state">
         <div class="empty-icon">◎</div>
-        <p>No captures yet.<br>Your structured dumps will appear here.</p>
+        <p>No captures yet.<br>Structured dumps will appear here.</p>
       </div>
     </div>
   </div>
 
-  <!-- SETTINGS TAB -->
+  <!-- ── SETTINGS TAB ── -->
   <div id="tab-settings" style="display:none">
     <div class="settings-panel">
 
+      <!-- AI Provider -->
       <div class="settings-section">
         <div class="settings-section-title">AI Provider</div>
-
-        <div class="setting-row">
-          <label>Provider</label>
-          <select id="providerSelect" onchange="updateProviderUI()">
-            <option value="none">None (offline only)</option>
-            <option value="anthropic">Anthropic (Claude)</option>
-            <option value="openai">OpenAI</option>
-            <option value="azure">Azure OpenAI</option>
-          </select>
-        </div>
-
-        <div id="anthropicSettings" style="display:none">
+        <div class="settings-body">
           <div class="setting-row">
-            <label>API Key</label>
-            <input type="password" id="anthropicKey" placeholder="sk-ant-..." oninput="saveSettings()">
-          </div>
-          <div class="setting-hint">Your key is stored only in your browser's local storage.</div>
-          <div class="setting-row">
-            <label>Model</label>
-            <select id="anthropicModel" onchange="saveSettings()">
-              <option value="claude-sonnet-4-20250514">Claude Sonnet 4</option>
-              <option value="claude-opus-4-20250514">Claude Opus 4</option>
-              <option value="claude-haiku-4-5-20251001">Claude Haiku 4.5</option>
+            <label>Provider</label>
+            <select id="providerSelect" onchange="onProviderChange()">
+              <option value="none">None (offline only)</option>
+              <option value="anthropic">Anthropic (Claude)</option>
+              <option value="openai">OpenAI</option>
+              <option value="azure">Azure OpenAI</option>
             </select>
           </div>
-        </div>
 
-        <div id="openaiSettings" style="display:none">
-          <div class="setting-row">
-            <label>API Key</label>
-            <input type="password" id="openaiKey" placeholder="sk-..." oninput="saveSettings()">
+          <div id="anthropicSettings" style="display:none">
+            <div class="setting-row">
+              <label>API Key</label>
+              <input type="password" id="anthropicKey" placeholder="sk-ant-..." oninput="saveSettings()">
+            </div>
+            <div class="setting-hint">Stored locally in your browser only.</div>
+            <div class="setting-row">
+              <label>Model</label>
+              <select id="anthropicModel" onchange="saveSettings()">
+                <option value="claude-sonnet-4-20250514">Claude Sonnet 4</option>
+                <option value="claude-opus-4-20250514">Claude Opus 4</option>
+                <option value="claude-haiku-4-5-20251001">Claude Haiku 4.5</option>
+              </select>
+            </div>
           </div>
-          <div class="setting-hint">Your key is stored only in your browser's local storage.</div>
-          <div class="setting-row">
-            <label>Model</label>
-            <select id="openaiModel" onchange="saveSettings()">
-              <option value="gpt-4o">GPT-4o</option>
-              <option value="gpt-4o-mini">GPT-4o mini</option>
-              <option value="gpt-4-turbo">GPT-4 Turbo</option>
-            </select>
-          </div>
-        </div>
 
-        <div id="azureSettings" style="display:none">
-          <div class="setting-row">
-            <label>Endpoint</label>
-            <input type="text" id="azureEndpoint" placeholder="https://your-resource.openai.azure.com" oninput="saveSettings()">
+          <div id="openaiSettings" style="display:none">
+            <div class="setting-row">
+              <label>API Key</label>
+              <input type="password" id="openaiKey" placeholder="sk-..." oninput="saveSettings()">
+            </div>
+            <div class="setting-hint">Stored locally in your browser only.</div>
+            <div class="setting-row">
+              <label>Model</label>
+              <select id="openaiModel" onchange="saveSettings()">
+                <option value="gpt-4o">GPT-4o</option>
+                <option value="gpt-4o-mini">GPT-4o mini</option>
+                <option value="gpt-4-turbo">GPT-4 Turbo</option>
+              </select>
+            </div>
           </div>
-          <div class="setting-row">
-            <label>API Key</label>
-            <input type="password" id="azureKey" placeholder="Your Azure OpenAI key" oninput="saveSettings()">
-          </div>
-          <div class="setting-row">
-            <label>Deployment</label>
-            <input type="text" id="azureDeployment" placeholder="e.g. gpt-4o" oninput="saveSettings()">
-          </div>
-          <div class="setting-row">
-            <label>API Version</label>
-            <input type="text" id="azureVersion" placeholder="2024-02-01" oninput="saveSettings()">
-          </div>
-          <div class="setting-hint">For work use — keeps all data within your Azure tenant.</div>
-        </div>
 
-        <div class="api-status" id="apiStatus">
-          <span class="status-dot unconfigured" id="statusDot"></span>
-          <span id="statusText">No provider configured — using offline parsing only</span>
+          <div id="azureSettings" style="display:none">
+            <div class="setting-row">
+              <label>Endpoint</label>
+              <input type="text" id="azureEndpoint" placeholder="https://your-resource.openai.azure.com" oninput="saveSettings()">
+            </div>
+            <div class="setting-row">
+              <label>API Key</label>
+              <input type="password" id="azureKey" placeholder="Your Azure OpenAI key" oninput="saveSettings()">
+            </div>
+            <div class="setting-row">
+              <label>Deployment</label>
+              <input type="text" id="azureDeployment" placeholder="e.g. gpt-4o" oninput="saveSettings()">
+            </div>
+            <div class="setting-row">
+              <label>API Version</label>
+              <input type="text" id="azureVersion" placeholder="2024-02-01" oninput="saveSettings()">
+            </div>
+            <div class="setting-hint">For work — keeps all data within your Azure tenant.</div>
+          </div>
+
+          <div class="api-status">
+            <span class="status-dot" id="statusDot"></span>
+            <span id="statusText">No provider configured — offline parsing only</span>
+          </div>
         </div>
       </div>
 
+      <!-- Categories -->
       <div class="settings-section">
         <div class="settings-section-title">Categories</div>
-        <p style="font-size:11px; color:var(--text-dimmer); line-height:1.7">
-          Dumps are categorised into: <strong style="color:var(--accent)">Work</strong>,
-          <strong style="color:var(--green)">Personal</strong>,
-          <strong style="color:#e08555">Health & Fitness</strong>,
-          <strong style="color:#cd6aab">Relationship</strong>,
-          <strong style="color:var(--blue)">Admin</strong>.<br><br>
-          AI structuring will intelligently assign items. Offline parsing uses keyword detection.
-        </p>
+        <div class="settings-body">
+          <p style="font-size:11px;color:var(--text-dimmer);margin-bottom:14px;line-height:1.6">
+            Name your categories, pick a colour, and add comma-separated keywords for offline parsing. AI structuring uses your category names automatically.
+          </p>
+          <div class="cat-list" id="catList"></div>
+          <button class="cat-add-btn" onclick="addCategory()">+ Add category</button>
+        </div>
       </div>
 
+      <!-- Data -->
       <div class="settings-section">
         <div class="settings-section-title">Data & Privacy</div>
-        <p style="font-size:11px; color:var(--text-dimmer); line-height:1.7">
-          All captures are stored in your browser's local storage — nothing is sent anywhere unless you configure an AI provider and click "Structure this".<br><br>
-          API keys are stored locally in your browser only. When using Azure OpenAI, data is processed within your Azure tenant.
-        </p>
+        <div class="settings-body">
+          <p style="font-size:11px;color:var(--text-dimmer);line-height:1.7">
+            All captures are stored in your browser's local storage only. Nothing is sent anywhere unless you configure an AI provider and click "Structure this".<br><br>
+            When using Azure OpenAI, data is processed within your Azure tenant. API keys never leave your device.
+          </p>
+        </div>
       </div>
 
     </div>
@@ -843,22 +821,60 @@
 </div>
 
 <script>
-// ─── State ───────────────────────────────────────────────────────────────────
+// ─── Default categories ───────────────────────────────────────────────────────
+const DEFAULT_CATEGORIES = [
+  { id: 'work',         name: 'Work',             color: '#c8b89a', keywords: 'meeting,client,email,project,deadline,colleague,work,office,presentation,report,career,job,brief,contract,innovation,legal,tech' },
+  { id: 'personal',     name: 'Personal',          color: '#5db87a', keywords: 'home,flat,shopping,errand,book,call,personal,life,sort,organise' },
+  { id: 'health',       name: 'Health & Fitness',  color: '#e08555', keywords: 'gym,run,exercise,sleep,diet,eat,walk,fitness,workout,steps,cycle,health,tired,weight' },
+  { id: 'relationship', name: 'Relationship',      color: '#cd6aab', keywords: 'partner,girlfriend,boyfriend,date,relationship,friend,family,social,dinner,plans,birthday,catch up' },
+  { id: 'admin',        name: 'Admin',             color: '#6aabcd', keywords: 'bill,bank,pay,tax,insurance,pension,mortgage,rent,renewal,appointment,cancel,renew,invoice,solicitor,divorce' },
+];
+
+const PRESET_COLORS = ['#c8b89a','#5db87a','#e08555','#cd6aab','#6aabcd','#e05555','#a78bfa','#f59e0b','#34d399','#f472b6','#60a5fa','#fb923c'];
+
+// ─── State ────────────────────────────────────────────────────────────────────
 let recognition = null;
 let isRecording = false;
-let interimText = '';
-let captures = JSON.parse(localStorage.getItem('captures') || '[]');
-let settings = JSON.parse(localStorage.getItem('captureSettings') || '{}');
+let captures = [];
+let settings = {};
+let categories = [];
+let deferredInstallPrompt = null;
+let activeCatColorPicker = null; // tracks which cat is getting a color picked
 
 // ─── Init ─────────────────────────────────────────────────────────────────────
-window.onload = () => {
-  loadSettings();
-  renderHistory();
-};
+window.addEventListener('load', () => {
+  captures = JSON.parse(localStorage.getItem('captures') || '[]');
+  settings = JSON.parse(localStorage.getItem('captureSettings') || '{}');
+  categories = JSON.parse(localStorage.getItem('captureCategories') || 'null') || DEFAULT_CATEGORIES;
+  loadSettingsUI();
+  renderCategoryList();
+  registerSW();
+});
+
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  deferredInstallPrompt = e;
+  document.getElementById('installBanner').classList.add('visible');
+});
+
+function installPWA() {
+  if (!deferredInstallPrompt) return;
+  deferredInstallPrompt.prompt();
+  deferredInstallPrompt.userChoice.then(() => {
+    deferredInstallPrompt = null;
+    document.getElementById('installBanner').classList.remove('visible');
+  });
+}
+
+function registerSW() {
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('sw.js').catch(() => {});
+  }
+}
 
 // ─── Tabs ─────────────────────────────────────────────────────────────────────
 function showTab(name, btn) {
-  ['dump', 'history', 'settings'].forEach(t => {
+  ['dump','history','settings'].forEach(t => {
     document.getElementById('tab-' + t).style.display = 'none';
   });
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
@@ -873,11 +889,7 @@ function toggleRecording() {
     notify('Speech recognition not supported. Please use Chrome or Edge.');
     return;
   }
-  if (isRecording) {
-    stopRecording();
-  } else {
-    requestMicThenRecord();
-  }
+  if (isRecording) { stopRecording(); } else { requestMicThenRecord(); }
 }
 
 async function requestMicThenRecord() {
@@ -886,7 +898,6 @@ async function requestMicThenRecord() {
   label.textContent = 'Requesting...';
   btn.disabled = true;
   try {
-    // getUserMedia is what actually triggers the browser permission popup
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
     stream.getTracks().forEach(t => t.stop());
     btn.disabled = false;
@@ -895,7 +906,7 @@ async function requestMicThenRecord() {
     btn.disabled = false;
     label.textContent = 'Speak';
     if (err.name === 'NotAllowedError') {
-      notify('Microphone access denied. Please allow mic in your browser settings, then try again.');
+      notify('Microphone access denied. Allow mic in your browser settings, then try again.');
     } else if (err.name === 'NotFoundError') {
       notify('No microphone found on this device.');
     } else {
@@ -905,8 +916,8 @@ async function requestMicThenRecord() {
 }
 
 function startRecording() {
-  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-  recognition = new SpeechRecognition();
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  recognition = new SR();
   recognition.continuous = true;
   recognition.interimResults = true;
   recognition.lang = 'en-GB';
@@ -915,29 +926,21 @@ function startRecording() {
   const baseText = textarea.value;
 
   recognition.onresult = (e) => {
-    let interim = '';
-    let final = '';
+    let interim = '', final = '';
     for (let i = e.resultIndex; i < e.results.length; i++) {
       if (e.results[i].isFinal) final += e.results[i][0].transcript + ' ';
       else interim += e.results[i][0].transcript;
     }
-    if (final) interimText = '';
     textarea.value = baseText + (baseText && !baseText.endsWith(' ') && final ? ' ' : '') + final + interim;
     updateCharCount();
   };
 
   recognition.onerror = (e) => {
-    if (e.error === 'not-allowed') {
-      notify('Microphone access denied. Check your browser settings.');
-      stopRecording();
-    } else if (e.error !== 'no-speech') {
-      notify('Mic error: ' + e.error);
-      stopRecording();
-    }
+    if (e.error === 'not-allowed') { notify('Mic access denied.'); stopRecording(); }
+    else if (e.error !== 'no-speech') { notify('Mic error: ' + e.error); stopRecording(); }
   };
 
   recognition.onend = () => { if (isRecording) recognition.start(); };
-
   recognition.start();
   isRecording = true;
   document.getElementById('recordBtn').classList.add('recording');
@@ -951,7 +954,6 @@ function stopRecording() {
   document.getElementById('recordLabel').textContent = 'Speak';
 }
 
-// ─── Char count ───────────────────────────────────────────────────────────────
 function updateCharCount() {
   document.getElementById('charCount').textContent = document.getElementById('dumpText').value.length;
 }
@@ -962,25 +964,21 @@ async function structureDump() {
   if (!text) { notify('Nothing to structure.'); return; }
 
   const provider = settings.provider || 'none';
-  if (provider === 'none') {
-    notify('No AI provider configured. Using offline parse instead.');
-    localParse(); return;
-  }
+  if (provider === 'none') { notify('No AI provider configured — using offline parse.'); localParse(); return; }
 
-  setStatus('loading', 'Structuring...');
+  setStatus('loading', 'Structuring…');
   document.getElementById('structureBtn').disabled = true;
 
   try {
     const prompt = buildPrompt(text);
-    let result;
-
-    if (provider === 'anthropic') result = await callAnthropic(prompt);
-    else if (provider === 'openai') result = await callOpenAI(prompt);
-    else if (provider === 'azure') result = await callAzure(prompt);
-
-    const parsed = parseAIResponse(result);
+    let raw;
+    if (provider === 'anthropic') raw = await callAnthropic(prompt);
+    else if (provider === 'openai') raw = await callOpenAI(prompt);
+    else if (provider === 'azure') raw = await callAzure(prompt);
+    const parsed = parseAIResponse(raw);
     renderResults(parsed, text);
     saveCapture(parsed, text);
+    clearDumpText(); // ← clear after successful structure
     setStatus('', '');
   } catch (err) {
     setStatus('', '');
@@ -990,25 +988,23 @@ async function structureDump() {
 }
 
 function buildPrompt(text) {
-  return `You are a personal organisation assistant. Parse this brain dump and extract actionable tasks, grouped by category.
+  const catList = categories.map(c => `- ${c.id}: ${c.name}`).join('\n');
+  const catIds = categories.map(c => c.id).join(', ');
+  return `You are a personal organisation assistant. Parse this brain dump and extract actionable tasks, grouped by the user's categories.
 
-Categories to use:
-- work: career, job tasks, professional goals, meetings, colleagues
-- personal: life admin, errands, things to sort, home
-- health: exercise, fitness, wellbeing, diet, sleep
-- relationship: partner, dating, social, friends, family
-- admin: bills, finances, legal, bureaucracy
+The user's categories are:
+${catList}
 
 For each item extract:
 - text: the task or note (concise, actionable)
 - priority: "high", "medium", or "low"
-- category: one of the above
+- category: one of these exact ids: ${catIds}
 
-Return ONLY valid JSON in this exact format:
+Return ONLY valid JSON in this exact format, no preamble:
 {
   "summary": "one sentence summary of the dump",
   "items": [
-    {"text": "task description", "priority": "high", "category": "work"}
+    {"text": "task description", "priority": "high", "category": "${categories[0]?.id || 'work'}"}
   ]
 }
 
@@ -1031,7 +1027,7 @@ async function callAnthropic(prompt) {
       messages: [{ role: 'user', content: prompt }]
     })
   });
-  if (!res.ok) throw new Error('Anthropic API error: ' + res.status);
+  if (!res.ok) throw new Error('Anthropic API error ' + res.status);
   const data = await res.json();
   return data.content[0].text;
 }
@@ -1039,17 +1035,14 @@ async function callAnthropic(prompt) {
 async function callOpenAI(prompt) {
   const res = await fetch('https://api.openai.com/v1/chat/completions', {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': 'Bearer ' + settings.openaiKey
-    },
+    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + settings.openaiKey },
     body: JSON.stringify({
       model: settings.openaiModel || 'gpt-4o',
       messages: [{ role: 'user', content: prompt }],
       response_format: { type: 'json_object' }
     })
   });
-  if (!res.ok) throw new Error('OpenAI API error: ' + res.status);
+  if (!res.ok) throw new Error('OpenAI API error ' + res.status);
   const data = await res.json();
   return data.choices[0].message.content;
 }
@@ -1058,76 +1051,57 @@ async function callAzure(prompt) {
   const url = `${settings.azureEndpoint}/openai/deployments/${settings.azureDeployment}/chat/completions?api-version=${settings.azureVersion || '2024-02-01'}`;
   const res = await fetch(url, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'api-key': settings.azureKey
-    },
-    body: JSON.stringify({
-      messages: [{ role: 'user', content: prompt }],
-      response_format: { type: 'json_object' }
-    })
+    headers: { 'Content-Type': 'application/json', 'api-key': settings.azureKey },
+    body: JSON.stringify({ messages: [{ role: 'user', content: prompt }], response_format: { type: 'json_object' } })
   });
-  if (!res.ok) throw new Error('Azure API error: ' + res.status);
+  if (!res.ok) throw new Error('Azure API error ' + res.status);
   const data = await res.json();
   return data.choices[0].message.content;
 }
 
 function parseAIResponse(text) {
   try {
-    const clean = text.replace(/```json|```/g, '').trim();
-    return JSON.parse(clean);
-  } catch {
-    return { summary: 'Parsed dump', items: [] };
-  }
+    return JSON.parse(text.replace(/```json|```/g, '').trim());
+  } catch { return { summary: 'Parsed dump', items: [] }; }
 }
 
-// ─── Offline / Local Parse ────────────────────────────────────────────────────
+// ─── Offline Parse ────────────────────────────────────────────────────────────
 function localParse() {
   const text = document.getElementById('dumpText').value.trim();
   if (!text) { notify('Nothing to parse.'); return; }
 
-  const workKw = ['meeting', 'client', 'email', 'project', 'deadline', 'colleague', 'work', 'office', 'presentation', 'report', 'career', 'job', 'boss', 'team', 'review', 'legal', 'tech', 'copilot', 'power', 'brief', 'contract', 'innovation'];
-  const healthKw = ['gym', 'run', 'exercise', 'sleep', 'diet', 'eat', 'walk', 'fitness', 'workout', 'meditate', 'tired', 'weight', 'steps', 'cycle'];
-  const relationshipKw = ['partner', 'girlfriend', 'boyfriend', 'date', 'relationship', 'friend', 'family', 'mum', 'dad', 'sister', 'brother', 'social', 'dinner', 'plans', 'catch up', 'wedding', 'birthday'];
-  const adminKw = ['bill', 'bank', 'pay', 'tax', 'insurance', 'pension', 'mortgage', 'rent', 'direct debit', 'renewal', 'appointment', 'council', 'nhs', 'book', 'cancel', 'renew', 'invoice', 'solicitor', 'divorce'];
-
-  // Split on newlines, full stops, or common connectors
-  const sentences = text.split(/[.\n!]+/).map(s => s.trim()).filter(s => s.length > 8);
+  const sentences = text.split(/[.\n!]+/).map(s => s.trim()).filter(s => s.length > 6);
+  const highKw = ['urgent','asap','today','must','critical','deadline','overdue','important'];
 
   const items = sentences.map(s => {
     const lower = s.toLowerCase();
-    let category = 'personal';
-    if (adminKw.some(k => lower.includes(k))) category = 'admin';
-    if (relationshipKw.some(k => lower.includes(k))) category = 'relationship';
-    if (healthKw.some(k => lower.includes(k))) category = 'health';
-    if (workKw.some(k => lower.includes(k))) category = 'work';
-
-    const highKw = ['urgent', 'asap', 'today', 'must', 'critical', 'deadline', 'overdue', 'important'];
+    // Find best matching category by keywords
+    let bestCat = categories[0];
+    let bestScore = 0;
+    categories.forEach(cat => {
+      const kws = (cat.keywords || '').split(',').map(k => k.trim().toLowerCase()).filter(Boolean);
+      const score = kws.filter(k => lower.includes(k)).length;
+      if (score > bestScore) { bestScore = score; bestCat = cat; }
+    });
     const priority = highKw.some(k => lower.includes(k)) ? 'high' : 'medium';
-
-    return { text: s.charAt(0).toUpperCase() + s.slice(1), priority, category };
+    return { text: s.charAt(0).toUpperCase() + s.slice(1), priority, category: bestCat.id };
   });
 
   const result = { summary: 'Parsed locally — ' + items.length + ' items found', items };
   renderResults(result, text);
   saveCapture(result, text);
+  clearDumpText(); // ← clear after parse too
 }
 
 // ─── Render Results ───────────────────────────────────────────────────────────
 function renderResults(data, rawText) {
   const area = document.getElementById('resultsArea');
-
-  const categories = {
-    work: { label: 'Work', cls: 'cat-work', color: '#c8b89a' },
-    personal: { label: 'Personal', cls: 'cat-personal', color: '#5db87a' },
-    health: { label: 'Health & Fitness', cls: 'cat-health', color: '#e08555' },
-    relationship: { label: 'Relationship', cls: 'cat-relationship', color: '#cd6aab' },
-    admin: { label: 'Admin', cls: 'cat-admin', color: '#6aabcd' }
-  };
+  const catMap = {};
+  categories.forEach(c => catMap[c.id] = c);
 
   const grouped = {};
   (data.items || []).forEach(item => {
-    const cat = item.category || 'personal';
+    const cat = item.category || categories[0]?.id;
     if (!grouped[cat]) grouped[cat] = [];
     grouped[cat].push(item);
   });
@@ -1135,22 +1109,24 @@ function renderResults(data, rawText) {
   let html = `<div class="results">
     <div class="results-header">
       <span class="results-title">${escHtml(data.summary || 'Structured dump')}</span>
-      <span class="timestamp">${new Date().toLocaleTimeString('en-GB', {hour:'2-digit',minute:'2-digit'})}</span>
+      <span class="timestamp">${new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'})}</span>
     </div>`;
 
-  Object.entries(categories).forEach(([key, cat]) => {
-    const items = grouped[key];
+  categories.forEach(cat => {
+    const items = grouped[cat.id];
     if (!items || !items.length) return;
-    html += `<div class="category-block" id="cat-${key}">
-      <div class="category-header ${cat.cls}" onclick="toggleCat('${key}')">
-        <span class="cat-tag">${cat.label}</span>
-        <span class="cat-count">${items.length} item${items.length !== 1 ? 's' : ''}</span>
+    const bg = cat.color + '18';
+    const border = cat.color + '44';
+    html += `<div class="category-block" id="cat-${cat.id}">
+      <div class="category-header" onclick="toggleCat('${cat.id}')" style="border-left: 3px solid ${cat.color}">
+        <span class="cat-tag" style="background:${bg};border:1px solid ${border};color:${cat.color}">${escHtml(cat.name)}</span>
+        <span class="cat-count">${items.length} item${items.length !== 1?'s':''}</span>
         <span class="cat-chevron">▾</span>
       </div>
       <div class="category-items">`;
     items.forEach((item, i) => {
-      html += `<div class="task-item" id="task-${key}-${i}">
-        <div class="task-check" onclick="toggleTask('${key}', ${i})"></div>
+      html += `<div class="task-item" id="task-${cat.id}-${i}">
+        <div class="task-check" onclick="toggleTask('${cat.id}',${i})"></div>
         <span class="task-text">${escHtml(item.text)}</span>
         ${item.priority !== 'low' ? `<span class="task-priority ${item.priority}">${item.priority}</span>` : ''}
       </div>`;
@@ -1158,23 +1134,41 @@ function renderResults(data, rawText) {
     html += `</div></div>`;
   });
 
+  // Also render any items whose category wasn't in our list
+  Object.keys(grouped).forEach(catId => {
+    if (catMap[catId]) return;
+    const items = grouped[catId];
+    html += `<div class="category-block" id="cat-${catId}">
+      <div class="category-header" onclick="toggleCat('${catId}')">
+        <span class="cat-tag" style="background:#ffffff11;border:1px solid #ffffff22;color:var(--text-dim)">${escHtml(catId)}</span>
+        <span class="cat-count">${items.length} item${items.length!==1?'s':''}</span>
+        <span class="cat-chevron">▾</span>
+      </div>
+      <div class="category-items">`;
+    items.forEach((item,i) => {
+      html += `<div class="task-item" id="task-${catId}-${i}">
+        <div class="task-check" onclick="toggleTask('${catId}',${i})"></div>
+        <span class="task-text">${escHtml(item.text)}</span>
+        ${item.priority!=='low'?`<span class="task-priority ${item.priority}">${item.priority}</span>`:''}
+      </div>`;
+    });
+    html += `</div></div>`;
+  });
+
   html += `<div class="raw-dump">
     <div class="raw-label">Original dump</div>
-    <div class="raw-text">${escHtml(rawText.substring(0, 400))}${rawText.length > 400 ? '…' : ''}</div>
+    <div class="raw-text">${escHtml(rawText.substring(0,400))}${rawText.length>400?'…':''}</div>
   </div></div>`;
 
   area.innerHTML = html;
 }
 
-function toggleCat(key) {
-  document.getElementById('cat-' + key).classList.toggle('collapsed');
-}
+function toggleCat(key) { document.getElementById('cat-' + key).classList.toggle('collapsed'); }
 
 function toggleTask(cat, i) {
   const item = document.getElementById(`task-${cat}-${i}`);
-  const check = item.querySelector('.task-check');
   item.classList.toggle('done-item');
-  check.classList.toggle('done');
+  item.querySelector('.task-check').classList.toggle('done');
 }
 
 // ─── Save & History ───────────────────────────────────────────────────────────
@@ -1185,33 +1179,36 @@ function saveCapture(data, rawText) {
     summary: data.summary,
     items: data.items,
     raw: rawText,
-    categories: [...new Set((data.items || []).map(i => i.category))]
+    categories: [...new Set((data.items||[]).map(i => i.category))]
   };
   captures.unshift(entry);
-  if (captures.length > 100) captures = captures.slice(0, 100);
+  if (captures.length > 100) captures = captures.slice(0,100);
   localStorage.setItem('captures', JSON.stringify(captures));
 }
 
 function renderHistory() {
   const list = document.getElementById('historyList');
   if (!captures.length) {
-    list.innerHTML = `<div class="empty-state"><div class="empty-icon">◎</div><p>No captures yet.<br>Your structured dumps will appear here.</p></div>`;
+    list.innerHTML = `<div class="empty-state"><div class="empty-icon">◎</div><p>No captures yet.<br>Structured dumps will appear here.</p></div>`;
     return;
   }
-
-  const catColors = { work: '#c8b89a', personal: '#5db87a', health: '#e08555', relationship: '#cd6aab', admin: '#6aabcd' };
+  const catMap = {};
+  categories.forEach(c => catMap[c.id] = c);
 
   list.innerHTML = captures.map(c => {
     const d = new Date(c.date);
-    const dateStr = d.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' }) + ' · ' + d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
-    const dots = (c.categories || []).map(cat => `<span class="history-tag-dot" style="background:${catColors[cat] || '#666'}"></span>`).join('');
+    const dateStr = d.toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'}) + ' · ' + d.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
+    const dots = (c.categories||[]).map(cid => {
+      const col = catMap[cid]?.color || '#666';
+      return `<span class="history-tag-dot" style="background:${col}"></span>`;
+    }).join('');
     return `<div class="history-item" onclick="loadCapture(${c.id})">
       <div class="history-meta">
         <span class="history-date">${dateStr}</span>
         <div class="history-tags">${dots}</div>
       </div>
       <div class="history-preview">${escHtml(c.summary || c.raw || '')}</div>
-      <div class="history-task-count">${(c.items || []).length} tasks</div>
+      <div class="history-task-count">${(c.items||[]).length} tasks</div>
     </div>`;
   }).join('');
 }
@@ -1226,8 +1223,70 @@ function loadCapture(id) {
   notify('Loaded capture from ' + new Date(entry.date).toLocaleDateString('en-GB'));
 }
 
+// ─── Category Manager ─────────────────────────────────────────────────────────
+function renderCategoryList() {
+  const list = document.getElementById('catList');
+  list.innerHTML = categories.map((cat, i) => `
+    <div class="cat-row" id="catrow-${i}">
+      <div class="cat-color-swatch" style="background:${cat.color}" onclick="toggleColorPicker(${i})" title="Pick colour"></div>
+      <input class="cat-name-input" value="${escHtml(cat.name)}" placeholder="Category name"
+        oninput="updateCat(${i},'name',this.value)">
+      <input class="cat-keywords-input" value="${escHtml(cat.keywords||'')}" placeholder="keywords, comma separated"
+        oninput="updateCat(${i},'keywords',this.value)">
+      <button class="cat-delete" onclick="deleteCategory(${i})" title="Delete">✕</button>
+    </div>
+    <div id="colorpicker-${i}" style="display:none">
+      <div class="color-picker-row">
+        ${PRESET_COLORS.map(col => `<div class="color-dot${cat.color===col?' selected':''}" style="background:${col}" onclick="pickColor(${i},'${col}')"></div>`).join('')}
+      </div>
+    </div>
+  `).join('');
+}
+
+function toggleColorPicker(i) {
+  if (activeCatColorPicker !== null && activeCatColorPicker !== i) {
+    document.getElementById('colorpicker-' + activeCatColorPicker).style.display = 'none';
+  }
+  const el = document.getElementById('colorpicker-' + i);
+  const showing = el.style.display === 'block';
+  el.style.display = showing ? 'none' : 'block';
+  activeCatColorPicker = showing ? null : i;
+}
+
+function pickColor(i, color) {
+  categories[i].color = color;
+  saveCategories();
+  renderCategoryList();
+  activeCatColorPicker = null;
+}
+
+function updateCat(i, field, value) {
+  categories[i][field] = value;
+  saveCategories();
+}
+
+function addCategory() {
+  const colors = PRESET_COLORS;
+  const usedColors = categories.map(c => c.color);
+  const color = colors.find(c => !usedColors.includes(c)) || colors[categories.length % colors.length];
+  categories.push({ id: 'cat_' + Date.now(), name: 'New category', color, keywords: '' });
+  saveCategories();
+  renderCategoryList();
+}
+
+function deleteCategory(i) {
+  if (categories.length <= 1) { notify("You need at least one category."); return; }
+  categories.splice(i, 1);
+  saveCategories();
+  renderCategoryList();
+}
+
+function saveCategories() {
+  localStorage.setItem('captureCategories', JSON.stringify(categories));
+}
+
 // ─── Settings ─────────────────────────────────────────────────────────────────
-function loadSettings() {
+function loadSettingsUI() {
   const s = settings;
   if (s.provider) document.getElementById('providerSelect').value = s.provider;
   if (s.anthropicKey) document.getElementById('anthropicKey').value = s.anthropicKey;
@@ -1257,32 +1316,41 @@ function saveSettings() {
   updateProviderUI();
 }
 
+function onProviderChange() {
+  saveSettings();
+  updateProviderUI();
+}
+
 function updateProviderUI() {
-  const provider = document.getElementById('providerSelect').value;
+  const provider = (settings.provider || document.getElementById('providerSelect').value);
   document.getElementById('anthropicSettings').style.display = provider === 'anthropic' ? 'block' : 'none';
   document.getElementById('openaiSettings').style.display = provider === 'openai' ? 'block' : 'none';
   document.getElementById('azureSettings').style.display = provider === 'azure' ? 'block' : 'none';
 
-  const dot = document.getElementById('statusDot');
-  const txt = document.getElementById('statusText');
   const configured = provider !== 'none' && (
     (provider === 'anthropic' && settings.anthropicKey) ||
     (provider === 'openai' && settings.openaiKey) ||
     (provider === 'azure' && settings.azureKey && settings.azureEndpoint && settings.azureDeployment)
   );
-  dot.className = 'status-dot ' + (configured ? 'configured' : 'unconfigured');
-  const labels = { none: 'No provider configured — using offline parsing only', anthropic: 'Anthropic Claude', openai: 'OpenAI', azure: 'Azure OpenAI' };
-  txt.textContent = configured ? (labels[provider] + ' — ready') : (provider === 'none' ? labels.none : labels[provider] + ' — key not yet configured');
+  document.getElementById('statusDot').className = 'status-dot ' + (configured ? 'configured' : '');
+  const labels = { none: 'No provider configured — offline parsing only', anthropic: 'Anthropic Claude', openai: 'OpenAI', azure: 'Azure OpenAI' };
+  document.getElementById('statusText').textContent = configured
+    ? (labels[provider] + ' — ready')
+    : (provider === 'none' ? labels.none : labels[provider] + ' — key not yet configured');
 }
 
 // ─── Utilities ────────────────────────────────────────────────────────────────
-function clearDump() {
+function clearDumpText() {
   document.getElementById('dumpText').value = '';
-  document.getElementById('resultsArea').innerHTML = '';
   updateCharCount();
 }
 
-function clearAll() {
+function clearDump() {
+  clearDumpText();
+  document.getElementById('resultsArea').innerHTML = '';
+}
+
+function clearAllHistory() {
   if (!confirm('Clear all captures from history? This cannot be undone.')) return;
   captures = [];
   localStorage.removeItem('captures');
@@ -1291,12 +1359,14 @@ function clearAll() {
 }
 
 function exportAll() {
-  const data = { exported: new Date().toISOString(), captures };
+  const data = { exported: new Date().toISOString(), categories, captures };
   const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
-  a.href = url; a.download = 'capture-export-' + new Date().toISOString().split('T')[0] + '.json';
-  a.click(); URL.revokeObjectURL(url);
+  a.href = url;
+  a.download = 'capture-export-' + new Date().toISOString().split('T')[0] + '.json';
+  a.click();
+  URL.revokeObjectURL(url);
 }
 
 function setStatus(type, msg) {
@@ -1310,7 +1380,7 @@ function notify(msg) {
   el.className = 'notif';
   el.textContent = msg;
   document.body.appendChild(el);
-  setTimeout(() => el.remove(), 3000);
+  setTimeout(() => el.remove(), 3500);
 }
 
 function escHtml(str) {
