@@ -1,0 +1,1321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Capture — Brain Dump Tool</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;1,9..144,300&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0e0e0e;
+    --surface: #161616;
+    --surface2: #1e1e1e;
+    --border: #2a2a2a;
+    --border-bright: #3a3a3a;
+    --text: #e8e4dc;
+    --text-dim: #7a7570;
+    --text-dimmer: #444;
+    --accent: #c8b89a;
+    --accent-dim: #8a7a68;
+    --red: #e05555;
+    --green: #5db87a;
+    --blue: #6aabcd;
+    --tag-work: #c8b89a22;
+    --tag-work-border: #c8b89a55;
+    --tag-personal: #5db87a22;
+    --tag-personal-border: #5db87a55;
+    --tag-health: #e0855522;
+    --tag-health-border: #e0855555;
+    --tag-relationship: #cd6aab22;
+    --tag-relationship-border: #cd6aab55;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    line-height: 1.6;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Subtle grain overlay */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 9999;
+    opacity: 0.4;
+  }
+
+  .app {
+    max-width: 820px;
+    margin: 0 auto;
+    padding: 48px 24px 80px;
+  }
+
+  /* Header */
+  .header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin-bottom: 48px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .logo {
+    font-family: 'Fraunces', serif;
+    font-size: 22px;
+    font-weight: 300;
+    font-style: italic;
+    color: var(--accent);
+    letter-spacing: -0.02em;
+  }
+
+  .logo span {
+    font-style: normal;
+    color: var(--text-dim);
+    font-size: 11px;
+    font-family: 'DM Mono', monospace;
+    margin-left: 12px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .header-actions {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+
+  .btn-ghost {
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+    padding: 6px 14px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    transition: all 0.15s;
+  }
+
+  .btn-ghost:hover {
+    border-color: var(--border-bright);
+    color: var(--text);
+  }
+
+  /* Tabs */
+  .tabs {
+    display: flex;
+    gap: 0;
+    margin-bottom: 32px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .tab {
+    padding: 10px 20px;
+    background: none;
+    border: none;
+    color: var(--text-dimmer);
+    cursor: pointer;
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+    transition: all 0.15s;
+  }
+
+  .tab:hover { color: var(--text-dim); }
+  .tab.active {
+    color: var(--accent);
+    border-bottom-color: var(--accent);
+  }
+
+  /* Capture panel */
+  .capture-area {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+    margin-bottom: 20px;
+  }
+
+  .capture-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface2);
+  }
+
+  .capture-label {
+    color: var(--text-dimmer);
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  .record-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+    padding: 6px 14px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    transition: all 0.2s;
+  }
+
+  .record-btn:hover {
+    border-color: var(--red);
+    color: var(--red);
+  }
+
+  .record-btn.recording {
+    border-color: var(--red);
+    color: var(--red);
+    background: #e0555511;
+    animation: pulse-border 1.5s ease-in-out infinite;
+  }
+
+  @keyframes pulse-border {
+    0%, 100% { box-shadow: 0 0 0 0 #e0555533; }
+    50% { box-shadow: 0 0 0 4px #e0555511; }
+  }
+
+  .record-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: currentColor;
+  }
+
+  .record-btn.recording .record-dot {
+    animation: blink 1s ease-in-out infinite;
+  }
+
+  @keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.2; }
+  }
+
+  textarea {
+    width: 100%;
+    min-height: 180px;
+    background: transparent;
+    border: none;
+    outline: none;
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    line-height: 1.8;
+    padding: 20px;
+    resize: vertical;
+    font-weight: 300;
+  }
+
+  textarea::placeholder {
+    color: var(--text-dimmer);
+    font-style: italic;
+    font-family: 'Fraunces', serif;
+    font-size: 14px;
+    font-weight: 300;
+  }
+
+  .char-count {
+    padding: 8px 16px;
+    border-top: 1px solid var(--border);
+    color: var(--text-dimmer);
+    font-size: 10px;
+    text-align: right;
+  }
+
+  /* Actions row */
+  .actions-row {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 32px;
+    flex-wrap: wrap;
+  }
+
+  .btn-primary {
+    background: var(--accent);
+    color: var(--bg);
+    border: none;
+    padding: 10px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    transition: all 0.15s;
+  }
+
+  .btn-primary:hover { background: #d4c4a8; }
+  .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  .btn-secondary {
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+    padding: 10px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    transition: all 0.15s;
+  }
+
+  .btn-secondary:hover {
+    border-color: var(--border-bright);
+    color: var(--text);
+  }
+
+  /* Status message */
+  .status {
+    font-size: 11px;
+    color: var(--text-dim);
+    padding: 10px 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-left: auto;
+  }
+
+  .status.loading::before {
+    content: '';
+    width: 10px;
+    height: 10px;
+    border: 1px solid var(--accent-dim);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    display: inline-block;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* Results */
+  .results {
+    animation: fadeUp 0.3s ease;
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .results-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+  }
+
+  .results-title {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-size: 16px;
+    font-weight: 300;
+    color: var(--text-dim);
+  }
+
+  .timestamp {
+    font-size: 10px;
+    color: var(--text-dimmer);
+    letter-spacing: 0.06em;
+  }
+
+  /* Category blocks */
+  .category-block {
+    margin-bottom: 16px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    overflow: hidden;
+  }
+
+  .category-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 16px;
+    background: var(--surface2);
+    border-bottom: 1px solid var(--border);
+    cursor: pointer;
+    user-select: none;
+  }
+
+  .category-header:hover { background: #222; }
+
+  .cat-tag {
+    font-size: 9px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 2px 8px;
+    border-radius: 3px;
+    font-weight: 500;
+  }
+
+  .cat-work .cat-tag { background: var(--tag-work); border: 1px solid var(--tag-work-border); color: var(--accent); }
+  .cat-personal .cat-tag { background: var(--tag-personal); border: 1px solid var(--tag-personal-border); color: var(--green); }
+  .cat-health .cat-tag { background: var(--tag-health); border: 1px solid var(--tag-health-border); color: #e08555; }
+  .cat-relationship .cat-tag { background: var(--tag-relationship); border: 1px solid var(--tag-relationship-border); color: #cd6aab; }
+  .cat-admin .cat-tag { background: #6aabcd22; border: 1px solid #6aabcd55; color: var(--blue); }
+
+  .cat-count {
+    font-size: 10px;
+    color: var(--text-dimmer);
+    margin-left: auto;
+  }
+
+  .cat-chevron {
+    color: var(--text-dimmer);
+    font-size: 10px;
+    transition: transform 0.2s;
+  }
+
+  .category-block.collapsed .cat-chevron { transform: rotate(-90deg); }
+  .category-block.collapsed .category-items { display: none; }
+
+  .category-items {
+    padding: 8px 0;
+  }
+
+  .task-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 8px 16px;
+    border-bottom: 1px solid var(--border);
+    transition: background 0.1s;
+  }
+
+  .task-item:last-child { border-bottom: none; }
+  .task-item:hover { background: #ffffff05; }
+
+  .task-check {
+    width: 14px;
+    height: 14px;
+    border: 1px solid var(--border-bright);
+    border-radius: 3px;
+    cursor: pointer;
+    flex-shrink: 0;
+    margin-top: 2px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s;
+  }
+
+  .task-check:hover { border-color: var(--accent-dim); }
+  .task-check.done {
+    background: var(--accent-dim);
+    border-color: var(--accent-dim);
+  }
+
+  .task-check.done::after {
+    content: '✓';
+    color: var(--bg);
+    font-size: 9px;
+  }
+
+  .task-text {
+    flex: 1;
+    color: var(--text);
+    font-size: 12px;
+    line-height: 1.6;
+    transition: all 0.15s;
+  }
+
+  .task-item.done-item .task-text {
+    color: var(--text-dimmer);
+    text-decoration: line-through;
+  }
+
+  .task-priority {
+    font-size: 9px;
+    color: var(--text-dimmer);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 1px 6px;
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  .task-priority.high { color: var(--red); border-color: #e0555544; }
+  .task-priority.medium { color: var(--accent); border-color: #c8b89a44; }
+
+  /* Raw dump section */
+  .raw-dump {
+    margin-top: 24px;
+    padding: 16px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+  }
+
+  .raw-label {
+    font-size: 9px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-dimmer);
+    margin-bottom: 10px;
+  }
+
+  .raw-text {
+    color: var(--text-dim);
+    font-style: italic;
+    font-family: 'Fraunces', serif;
+    font-size: 13px;
+    font-weight: 300;
+    line-height: 1.7;
+  }
+
+  /* History tab */
+  .history-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .history-item {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 14px 16px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .history-item:hover { border-color: var(--border-bright); }
+
+  .history-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 6px;
+  }
+
+  .history-date {
+    font-size: 10px;
+    color: var(--text-dimmer);
+    letter-spacing: 0.06em;
+  }
+
+  .history-tags {
+    display: flex;
+    gap: 4px;
+  }
+
+  .history-tag-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+  }
+
+  .history-preview {
+    color: var(--text-dim);
+    font-size: 12px;
+    line-height: 1.5;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .history-task-count {
+    font-size: 10px;
+    color: var(--text-dimmer);
+    margin-top: 6px;
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--text-dimmer);
+  }
+
+  .empty-state .empty-icon {
+    font-size: 32px;
+    margin-bottom: 12px;
+    opacity: 0.3;
+  }
+
+  .empty-state p {
+    font-size: 12px;
+    line-height: 1.6;
+  }
+
+  /* Settings panel */
+  .settings-panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 24px;
+  }
+
+  .settings-section {
+    margin-bottom: 28px;
+  }
+
+  .settings-section:last-child { margin-bottom: 0; }
+
+  .settings-section-title {
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-dimmer);
+    margin-bottom: 14px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .setting-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+
+  .setting-row label {
+    width: 120px;
+    font-size: 11px;
+    color: var(--text-dim);
+    flex-shrink: 0;
+  }
+
+  .setting-row input,
+  .setting-row select {
+    flex: 1;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 8px 12px;
+    border-radius: 4px;
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+
+  .setting-row input:focus,
+  .setting-row select:focus {
+    border-color: var(--accent-dim);
+  }
+
+  .setting-row select option { background: #1e1e1e; }
+
+  .setting-hint {
+    font-size: 10px;
+    color: var(--text-dimmer);
+    margin-top: -6px;
+    margin-bottom: 10px;
+    padding-left: 132px;
+    line-height: 1.5;
+  }
+
+  .api-status {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 11px;
+    margin-top: 12px;
+    padding: 10px 12px;
+    background: var(--surface2);
+    border-radius: 4px;
+  }
+
+  .status-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--text-dimmer);
+  }
+
+  .status-dot.configured { background: var(--green); }
+  .status-dot.unconfigured { background: var(--text-dimmer); }
+
+  /* Notification */
+  .notif {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    background: var(--surface2);
+    border: 1px solid var(--border-bright);
+    color: var(--text);
+    padding: 10px 16px;
+    border-radius: 6px;
+    font-size: 12px;
+    z-index: 100;
+    animation: slideIn 0.2s ease;
+    max-width: 300px;
+  }
+
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Mobile tweaks */
+  @media (max-width: 600px) {
+    .app { padding: 24px 16px 60px; }
+    .header { flex-direction: column; gap: 12px; }
+    .setting-row { flex-direction: column; align-items: flex-start; }
+    .setting-row label { width: auto; }
+    .setting-hint { padding-left: 0; }
+    .actions-row { flex-direction: column; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <div class="header">
+    <div class="logo">Capture <span>Brain dump tool</span></div>
+    <div class="header-actions">
+      <button class="btn-ghost" onclick="exportAll()">Export</button>
+      <button class="btn-ghost" onclick="clearAll()">Clear all</button>
+    </div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tabs">
+    <button class="tab active" onclick="showTab('dump', this)">Dump</button>
+    <button class="tab" onclick="showTab('history', this)">History</button>
+    <button class="tab" onclick="showTab('settings', this)">Settings</button>
+  </div>
+
+  <!-- DUMP TAB -->
+  <div id="tab-dump">
+    <div class="capture-area">
+      <div class="capture-toolbar">
+        <span class="capture-label">What's on your mind?</span>
+        <button class="record-btn" id="recordBtn" onclick="toggleRecording()">
+          <span class="record-dot"></span>
+          <span id="recordLabel">Speak</span>
+        </button>
+      </div>
+      <textarea id="dumpText" placeholder="Just talk — tasks, worries, things to do, things you're thinking about. Don't organise it, just get it out..." oninput="updateCharCount()"></textarea>
+      <div class="char-count"><span id="charCount">0</span> chars</div>
+    </div>
+
+    <div class="actions-row">
+      <button class="btn-primary" onclick="structureDump()" id="structureBtn">Structure this</button>
+      <button class="btn-secondary" onclick="localParse()">Quick parse (offline)</button>
+      <button class="btn-secondary" onclick="clearDump()">Clear</button>
+      <span class="status" id="statusMsg"></span>
+    </div>
+
+    <div id="resultsArea"></div>
+  </div>
+
+  <!-- HISTORY TAB -->
+  <div id="tab-history" style="display:none">
+    <div class="history-list" id="historyList">
+      <div class="empty-state">
+        <div class="empty-icon">◎</div>
+        <p>No captures yet.<br>Your structured dumps will appear here.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- SETTINGS TAB -->
+  <div id="tab-settings" style="display:none">
+    <div class="settings-panel">
+
+      <div class="settings-section">
+        <div class="settings-section-title">AI Provider</div>
+
+        <div class="setting-row">
+          <label>Provider</label>
+          <select id="providerSelect" onchange="updateProviderUI()">
+            <option value="none">None (offline only)</option>
+            <option value="anthropic">Anthropic (Claude)</option>
+            <option value="openai">OpenAI</option>
+            <option value="azure">Azure OpenAI</option>
+          </select>
+        </div>
+
+        <div id="anthropicSettings" style="display:none">
+          <div class="setting-row">
+            <label>API Key</label>
+            <input type="password" id="anthropicKey" placeholder="sk-ant-..." oninput="saveSettings()">
+          </div>
+          <div class="setting-hint">Your key is stored only in your browser's local storage.</div>
+          <div class="setting-row">
+            <label>Model</label>
+            <select id="anthropicModel" onchange="saveSettings()">
+              <option value="claude-sonnet-4-20250514">Claude Sonnet 4</option>
+              <option value="claude-opus-4-20250514">Claude Opus 4</option>
+              <option value="claude-haiku-4-5-20251001">Claude Haiku 4.5</option>
+            </select>
+          </div>
+        </div>
+
+        <div id="openaiSettings" style="display:none">
+          <div class="setting-row">
+            <label>API Key</label>
+            <input type="password" id="openaiKey" placeholder="sk-..." oninput="saveSettings()">
+          </div>
+          <div class="setting-hint">Your key is stored only in your browser's local storage.</div>
+          <div class="setting-row">
+            <label>Model</label>
+            <select id="openaiModel" onchange="saveSettings()">
+              <option value="gpt-4o">GPT-4o</option>
+              <option value="gpt-4o-mini">GPT-4o mini</option>
+              <option value="gpt-4-turbo">GPT-4 Turbo</option>
+            </select>
+          </div>
+        </div>
+
+        <div id="azureSettings" style="display:none">
+          <div class="setting-row">
+            <label>Endpoint</label>
+            <input type="text" id="azureEndpoint" placeholder="https://your-resource.openai.azure.com" oninput="saveSettings()">
+          </div>
+          <div class="setting-row">
+            <label>API Key</label>
+            <input type="password" id="azureKey" placeholder="Your Azure OpenAI key" oninput="saveSettings()">
+          </div>
+          <div class="setting-row">
+            <label>Deployment</label>
+            <input type="text" id="azureDeployment" placeholder="e.g. gpt-4o" oninput="saveSettings()">
+          </div>
+          <div class="setting-row">
+            <label>API Version</label>
+            <input type="text" id="azureVersion" placeholder="2024-02-01" oninput="saveSettings()">
+          </div>
+          <div class="setting-hint">For work use — keeps all data within your Azure tenant.</div>
+        </div>
+
+        <div class="api-status" id="apiStatus">
+          <span class="status-dot unconfigured" id="statusDot"></span>
+          <span id="statusText">No provider configured — using offline parsing only</span>
+        </div>
+      </div>
+
+      <div class="settings-section">
+        <div class="settings-section-title">Categories</div>
+        <p style="font-size:11px; color:var(--text-dimmer); line-height:1.7">
+          Dumps are categorised into: <strong style="color:var(--accent)">Work</strong>,
+          <strong style="color:var(--green)">Personal</strong>,
+          <strong style="color:#e08555">Health & Fitness</strong>,
+          <strong style="color:#cd6aab">Relationship</strong>,
+          <strong style="color:var(--blue)">Admin</strong>.<br><br>
+          AI structuring will intelligently assign items. Offline parsing uses keyword detection.
+        </p>
+      </div>
+
+      <div class="settings-section">
+        <div class="settings-section-title">Data & Privacy</div>
+        <p style="font-size:11px; color:var(--text-dimmer); line-height:1.7">
+          All captures are stored in your browser's local storage — nothing is sent anywhere unless you configure an AI provider and click "Structure this".<br><br>
+          API keys are stored locally in your browser only. When using Azure OpenAI, data is processed within your Azure tenant.
+        </p>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ─── State ───────────────────────────────────────────────────────────────────
+let recognition = null;
+let isRecording = false;
+let interimText = '';
+let captures = JSON.parse(localStorage.getItem('captures') || '[]');
+let settings = JSON.parse(localStorage.getItem('captureSettings') || '{}');
+
+// ─── Init ─────────────────────────────────────────────────────────────────────
+window.onload = () => {
+  loadSettings();
+  renderHistory();
+};
+
+// ─── Tabs ─────────────────────────────────────────────────────────────────────
+function showTab(name, btn) {
+  ['dump', 'history', 'settings'].forEach(t => {
+    document.getElementById('tab-' + t).style.display = 'none';
+  });
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('tab-' + name).style.display = 'block';
+  btn.classList.add('active');
+  if (name === 'history') renderHistory();
+}
+
+// ─── Speech Recognition ───────────────────────────────────────────────────────
+function toggleRecording() {
+  if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+    notify('Speech recognition not supported. Please use Chrome or Edge.');
+    return;
+  }
+  if (isRecording) {
+    stopRecording();
+  } else {
+    requestMicThenRecord();
+  }
+}
+
+async function requestMicThenRecord() {
+  const btn = document.getElementById('recordBtn');
+  const label = document.getElementById('recordLabel');
+  label.textContent = 'Requesting...';
+  btn.disabled = true;
+  try {
+    // getUserMedia is what actually triggers the browser permission popup
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    stream.getTracks().forEach(t => t.stop());
+    btn.disabled = false;
+    startRecording();
+  } catch (err) {
+    btn.disabled = false;
+    label.textContent = 'Speak';
+    if (err.name === 'NotAllowedError') {
+      notify('Microphone access denied. Please allow mic in your browser settings, then try again.');
+    } else if (err.name === 'NotFoundError') {
+      notify('No microphone found on this device.');
+    } else {
+      notify('Mic error: ' + err.message);
+    }
+  }
+}
+
+function startRecording() {
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  recognition = new SpeechRecognition();
+  recognition.continuous = true;
+  recognition.interimResults = true;
+  recognition.lang = 'en-GB';
+
+  const textarea = document.getElementById('dumpText');
+  const baseText = textarea.value;
+
+  recognition.onresult = (e) => {
+    let interim = '';
+    let final = '';
+    for (let i = e.resultIndex; i < e.results.length; i++) {
+      if (e.results[i].isFinal) final += e.results[i][0].transcript + ' ';
+      else interim += e.results[i][0].transcript;
+    }
+    if (final) interimText = '';
+    textarea.value = baseText + (baseText && !baseText.endsWith(' ') && final ? ' ' : '') + final + interim;
+    updateCharCount();
+  };
+
+  recognition.onerror = (e) => {
+    if (e.error === 'not-allowed') {
+      notify('Microphone access denied. Check your browser settings.');
+      stopRecording();
+    } else if (e.error !== 'no-speech') {
+      notify('Mic error: ' + e.error);
+      stopRecording();
+    }
+  };
+
+  recognition.onend = () => { if (isRecording) recognition.start(); };
+
+  recognition.start();
+  isRecording = true;
+  document.getElementById('recordBtn').classList.add('recording');
+  document.getElementById('recordLabel').textContent = 'Stop';
+}
+
+function stopRecording() {
+  if (recognition) { recognition.onend = null; recognition.stop(); }
+  isRecording = false;
+  document.getElementById('recordBtn').classList.remove('recording');
+  document.getElementById('recordLabel').textContent = 'Speak';
+}
+
+// ─── Char count ───────────────────────────────────────────────────────────────
+function updateCharCount() {
+  document.getElementById('charCount').textContent = document.getElementById('dumpText').value.length;
+}
+
+// ─── AI Structuring ───────────────────────────────────────────────────────────
+async function structureDump() {
+  const text = document.getElementById('dumpText').value.trim();
+  if (!text) { notify('Nothing to structure.'); return; }
+
+  const provider = settings.provider || 'none';
+  if (provider === 'none') {
+    notify('No AI provider configured. Using offline parse instead.');
+    localParse(); return;
+  }
+
+  setStatus('loading', 'Structuring...');
+  document.getElementById('structureBtn').disabled = true;
+
+  try {
+    const prompt = buildPrompt(text);
+    let result;
+
+    if (provider === 'anthropic') result = await callAnthropic(prompt);
+    else if (provider === 'openai') result = await callOpenAI(prompt);
+    else if (provider === 'azure') result = await callAzure(prompt);
+
+    const parsed = parseAIResponse(result);
+    renderResults(parsed, text);
+    saveCapture(parsed, text);
+    setStatus('', '');
+  } catch (err) {
+    setStatus('', '');
+    notify('Error: ' + err.message);
+  }
+  document.getElementById('structureBtn').disabled = false;
+}
+
+function buildPrompt(text) {
+  return `You are a personal organisation assistant. Parse this brain dump and extract actionable tasks, grouped by category.
+
+Categories to use:
+- work: career, job tasks, professional goals, meetings, colleagues
+- personal: life admin, errands, things to sort, home
+- health: exercise, fitness, wellbeing, diet, sleep
+- relationship: partner, dating, social, friends, family
+- admin: bills, finances, legal, bureaucracy
+
+For each item extract:
+- text: the task or note (concise, actionable)
+- priority: "high", "medium", or "low"
+- category: one of the above
+
+Return ONLY valid JSON in this exact format:
+{
+  "summary": "one sentence summary of the dump",
+  "items": [
+    {"text": "task description", "priority": "high", "category": "work"}
+  ]
+}
+
+Brain dump:
+${text}`;
+}
+
+async function callAnthropic(prompt) {
+  const res = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': settings.anthropicKey,
+      'anthropic-version': '2023-06-01',
+      'anthropic-dangerous-direct-browser-access': 'true'
+    },
+    body: JSON.stringify({
+      model: settings.anthropicModel || 'claude-sonnet-4-20250514',
+      max_tokens: 1500,
+      messages: [{ role: 'user', content: prompt }]
+    })
+  });
+  if (!res.ok) throw new Error('Anthropic API error: ' + res.status);
+  const data = await res.json();
+  return data.content[0].text;
+}
+
+async function callOpenAI(prompt) {
+  const res = await fetch('https://api.openai.com/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer ' + settings.openaiKey
+    },
+    body: JSON.stringify({
+      model: settings.openaiModel || 'gpt-4o',
+      messages: [{ role: 'user', content: prompt }],
+      response_format: { type: 'json_object' }
+    })
+  });
+  if (!res.ok) throw new Error('OpenAI API error: ' + res.status);
+  const data = await res.json();
+  return data.choices[0].message.content;
+}
+
+async function callAzure(prompt) {
+  const url = `${settings.azureEndpoint}/openai/deployments/${settings.azureDeployment}/chat/completions?api-version=${settings.azureVersion || '2024-02-01'}`;
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'api-key': settings.azureKey
+    },
+    body: JSON.stringify({
+      messages: [{ role: 'user', content: prompt }],
+      response_format: { type: 'json_object' }
+    })
+  });
+  if (!res.ok) throw new Error('Azure API error: ' + res.status);
+  const data = await res.json();
+  return data.choices[0].message.content;
+}
+
+function parseAIResponse(text) {
+  try {
+    const clean = text.replace(/```json|```/g, '').trim();
+    return JSON.parse(clean);
+  } catch {
+    return { summary: 'Parsed dump', items: [] };
+  }
+}
+
+// ─── Offline / Local Parse ────────────────────────────────────────────────────
+function localParse() {
+  const text = document.getElementById('dumpText').value.trim();
+  if (!text) { notify('Nothing to parse.'); return; }
+
+  const workKw = ['meeting', 'client', 'email', 'project', 'deadline', 'colleague', 'work', 'office', 'presentation', 'report', 'career', 'job', 'boss', 'team', 'review', 'legal', 'tech', 'copilot', 'power', 'brief', 'contract', 'innovation'];
+  const healthKw = ['gym', 'run', 'exercise', 'sleep', 'diet', 'eat', 'walk', 'fitness', 'workout', 'meditate', 'tired', 'weight', 'steps', 'cycle'];
+  const relationshipKw = ['partner', 'girlfriend', 'boyfriend', 'date', 'relationship', 'friend', 'family', 'mum', 'dad', 'sister', 'brother', 'social', 'dinner', 'plans', 'catch up', 'wedding', 'birthday'];
+  const adminKw = ['bill', 'bank', 'pay', 'tax', 'insurance', 'pension', 'mortgage', 'rent', 'direct debit', 'renewal', 'appointment', 'council', 'nhs', 'book', 'cancel', 'renew', 'invoice', 'solicitor', 'divorce'];
+
+  // Split on newlines, full stops, or common connectors
+  const sentences = text.split(/[.\n!]+/).map(s => s.trim()).filter(s => s.length > 8);
+
+  const items = sentences.map(s => {
+    const lower = s.toLowerCase();
+    let category = 'personal';
+    if (adminKw.some(k => lower.includes(k))) category = 'admin';
+    if (relationshipKw.some(k => lower.includes(k))) category = 'relationship';
+    if (healthKw.some(k => lower.includes(k))) category = 'health';
+    if (workKw.some(k => lower.includes(k))) category = 'work';
+
+    const highKw = ['urgent', 'asap', 'today', 'must', 'critical', 'deadline', 'overdue', 'important'];
+    const priority = highKw.some(k => lower.includes(k)) ? 'high' : 'medium';
+
+    return { text: s.charAt(0).toUpperCase() + s.slice(1), priority, category };
+  });
+
+  const result = { summary: 'Parsed locally — ' + items.length + ' items found', items };
+  renderResults(result, text);
+  saveCapture(result, text);
+}
+
+// ─── Render Results ───────────────────────────────────────────────────────────
+function renderResults(data, rawText) {
+  const area = document.getElementById('resultsArea');
+
+  const categories = {
+    work: { label: 'Work', cls: 'cat-work', color: '#c8b89a' },
+    personal: { label: 'Personal', cls: 'cat-personal', color: '#5db87a' },
+    health: { label: 'Health & Fitness', cls: 'cat-health', color: '#e08555' },
+    relationship: { label: 'Relationship', cls: 'cat-relationship', color: '#cd6aab' },
+    admin: { label: 'Admin', cls: 'cat-admin', color: '#6aabcd' }
+  };
+
+  const grouped = {};
+  (data.items || []).forEach(item => {
+    const cat = item.category || 'personal';
+    if (!grouped[cat]) grouped[cat] = [];
+    grouped[cat].push(item);
+  });
+
+  let html = `<div class="results">
+    <div class="results-header">
+      <span class="results-title">${escHtml(data.summary || 'Structured dump')}</span>
+      <span class="timestamp">${new Date().toLocaleTimeString('en-GB', {hour:'2-digit',minute:'2-digit'})}</span>
+    </div>`;
+
+  Object.entries(categories).forEach(([key, cat]) => {
+    const items = grouped[key];
+    if (!items || !items.length) return;
+    html += `<div class="category-block" id="cat-${key}">
+      <div class="category-header ${cat.cls}" onclick="toggleCat('${key}')">
+        <span class="cat-tag">${cat.label}</span>
+        <span class="cat-count">${items.length} item${items.length !== 1 ? 's' : ''}</span>
+        <span class="cat-chevron">▾</span>
+      </div>
+      <div class="category-items">`;
+    items.forEach((item, i) => {
+      html += `<div class="task-item" id="task-${key}-${i}">
+        <div class="task-check" onclick="toggleTask('${key}', ${i})"></div>
+        <span class="task-text">${escHtml(item.text)}</span>
+        ${item.priority !== 'low' ? `<span class="task-priority ${item.priority}">${item.priority}</span>` : ''}
+      </div>`;
+    });
+    html += `</div></div>`;
+  });
+
+  html += `<div class="raw-dump">
+    <div class="raw-label">Original dump</div>
+    <div class="raw-text">${escHtml(rawText.substring(0, 400))}${rawText.length > 400 ? '…' : ''}</div>
+  </div></div>`;
+
+  area.innerHTML = html;
+}
+
+function toggleCat(key) {
+  document.getElementById('cat-' + key).classList.toggle('collapsed');
+}
+
+function toggleTask(cat, i) {
+  const item = document.getElementById(`task-${cat}-${i}`);
+  const check = item.querySelector('.task-check');
+  item.classList.toggle('done-item');
+  check.classList.toggle('done');
+}
+
+// ─── Save & History ───────────────────────────────────────────────────────────
+function saveCapture(data, rawText) {
+  const entry = {
+    id: Date.now(),
+    date: new Date().toISOString(),
+    summary: data.summary,
+    items: data.items,
+    raw: rawText,
+    categories: [...new Set((data.items || []).map(i => i.category))]
+  };
+  captures.unshift(entry);
+  if (captures.length > 100) captures = captures.slice(0, 100);
+  localStorage.setItem('captures', JSON.stringify(captures));
+}
+
+function renderHistory() {
+  const list = document.getElementById('historyList');
+  if (!captures.length) {
+    list.innerHTML = `<div class="empty-state"><div class="empty-icon">◎</div><p>No captures yet.<br>Your structured dumps will appear here.</p></div>`;
+    return;
+  }
+
+  const catColors = { work: '#c8b89a', personal: '#5db87a', health: '#e08555', relationship: '#cd6aab', admin: '#6aabcd' };
+
+  list.innerHTML = captures.map(c => {
+    const d = new Date(c.date);
+    const dateStr = d.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' }) + ' · ' + d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+    const dots = (c.categories || []).map(cat => `<span class="history-tag-dot" style="background:${catColors[cat] || '#666'}"></span>`).join('');
+    return `<div class="history-item" onclick="loadCapture(${c.id})">
+      <div class="history-meta">
+        <span class="history-date">${dateStr}</span>
+        <div class="history-tags">${dots}</div>
+      </div>
+      <div class="history-preview">${escHtml(c.summary || c.raw || '')}</div>
+      <div class="history-task-count">${(c.items || []).length} tasks</div>
+    </div>`;
+  }).join('');
+}
+
+function loadCapture(id) {
+  const entry = captures.find(c => c.id === id);
+  if (!entry) return;
+  document.getElementById('dumpText').value = entry.raw || '';
+  updateCharCount();
+  renderResults({ summary: entry.summary, items: entry.items }, entry.raw || '');
+  showTab('dump', document.querySelectorAll('.tab')[0]);
+  notify('Loaded capture from ' + new Date(entry.date).toLocaleDateString('en-GB'));
+}
+
+// ─── Settings ─────────────────────────────────────────────────────────────────
+function loadSettings() {
+  const s = settings;
+  if (s.provider) document.getElementById('providerSelect').value = s.provider;
+  if (s.anthropicKey) document.getElementById('anthropicKey').value = s.anthropicKey;
+  if (s.anthropicModel) document.getElementById('anthropicModel').value = s.anthropicModel;
+  if (s.openaiKey) document.getElementById('openaiKey').value = s.openaiKey;
+  if (s.openaiModel) document.getElementById('openaiModel').value = s.openaiModel;
+  if (s.azureEndpoint) document.getElementById('azureEndpoint').value = s.azureEndpoint;
+  if (s.azureKey) document.getElementById('azureKey').value = s.azureKey;
+  if (s.azureDeployment) document.getElementById('azureDeployment').value = s.azureDeployment;
+  if (s.azureVersion) document.getElementById('azureVersion').value = s.azureVersion;
+  updateProviderUI();
+}
+
+function saveSettings() {
+  settings = {
+    provider: document.getElementById('providerSelect').value,
+    anthropicKey: document.getElementById('anthropicKey').value,
+    anthropicModel: document.getElementById('anthropicModel').value,
+    openaiKey: document.getElementById('openaiKey').value,
+    openaiModel: document.getElementById('openaiModel').value,
+    azureEndpoint: document.getElementById('azureEndpoint').value,
+    azureKey: document.getElementById('azureKey').value,
+    azureDeployment: document.getElementById('azureDeployment').value,
+    azureVersion: document.getElementById('azureVersion').value
+  };
+  localStorage.setItem('captureSettings', JSON.stringify(settings));
+  updateProviderUI();
+}
+
+function updateProviderUI() {
+  const provider = document.getElementById('providerSelect').value;
+  document.getElementById('anthropicSettings').style.display = provider === 'anthropic' ? 'block' : 'none';
+  document.getElementById('openaiSettings').style.display = provider === 'openai' ? 'block' : 'none';
+  document.getElementById('azureSettings').style.display = provider === 'azure' ? 'block' : 'none';
+
+  const dot = document.getElementById('statusDot');
+  const txt = document.getElementById('statusText');
+  const configured = provider !== 'none' && (
+    (provider === 'anthropic' && settings.anthropicKey) ||
+    (provider === 'openai' && settings.openaiKey) ||
+    (provider === 'azure' && settings.azureKey && settings.azureEndpoint && settings.azureDeployment)
+  );
+  dot.className = 'status-dot ' + (configured ? 'configured' : 'unconfigured');
+  const labels = { none: 'No provider configured — using offline parsing only', anthropic: 'Anthropic Claude', openai: 'OpenAI', azure: 'Azure OpenAI' };
+  txt.textContent = configured ? (labels[provider] + ' — ready') : (provider === 'none' ? labels.none : labels[provider] + ' — key not yet configured');
+}
+
+// ─── Utilities ────────────────────────────────────────────────────────────────
+function clearDump() {
+  document.getElementById('dumpText').value = '';
+  document.getElementById('resultsArea').innerHTML = '';
+  updateCharCount();
+}
+
+function clearAll() {
+  if (!confirm('Clear all captures from history? This cannot be undone.')) return;
+  captures = [];
+  localStorage.removeItem('captures');
+  renderHistory();
+  notify('All captures cleared.');
+}
+
+function exportAll() {
+  const data = { exported: new Date().toISOString(), captures };
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'capture-export-' + new Date().toISOString().split('T')[0] + '.json';
+  a.click(); URL.revokeObjectURL(url);
+}
+
+function setStatus(type, msg) {
+  const el = document.getElementById('statusMsg');
+  el.textContent = msg;
+  el.className = 'status ' + (type || '');
+}
+
+function notify(msg) {
+  const el = document.createElement('div');
+  el.className = 'notif';
+  el.textContent = msg;
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 3000);
+}
+
+function escHtml(str) {
+  return (str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+</script>
+</body>
+</html>
